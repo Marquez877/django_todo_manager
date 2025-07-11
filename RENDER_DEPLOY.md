@@ -67,7 +67,7 @@ DJANGO_SUPERUSER_PASSWORD=your-admin-password
 
 **Важно**: 
 - `DATABASE_URL` - скопируйте из созданной БД
-- `SECRET_KEY` - сгенерируйте новый длинный ключ
+- `SECRET_KEY` - сгенерируйте новый длинный ключ (можно использовать: https://djecrety.ir/)
 - `ALLOWED_HOSTS` - замените на ваше имя приложения
 
 ### Шаг 4: Деплой
@@ -102,6 +102,8 @@ DJANGO_SUPERUSER_PASSWORD=your-admin-password
 2. **Database connection**: убедитесь в правильности `DATABASE_URL`
 3. **Static files 404**: проверьте настройки `STATIC_ROOT` в settings.py
 4. **SECRET_KEY error**: убедитесь, что переменная установлена
+5. **psycopg2 module error**: используйте Python 3.11.5 и psycopg2-binary==2.9.9
+6. **Module import errors**: убедитесь что все зависимости в requirements.txt
 
 ### Логи деплоя:
 - Во время сборки смотрите логи в реальном времени
