@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Custom app for managing todo lists
+    'todo_list.apps.TodoListConfig',  # Ensure this matches the app config class
 ]
 
 MIDDLEWARE = [
