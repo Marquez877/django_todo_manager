@@ -1,22 +1,25 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 # Create your models here.
 
 class Category(models.Model):
     """Модель категории задач"""
-    name = models.CharField(max_length=100, unique=True, verbose_name='Название')
+    name = models.CharField(max_length=100, verbose_name='Название')
     color = models.CharField(max_length=7, default='#007bff', verbose_name='Цвет')
     description = models.TextField(blank=True, verbose_name='Описание')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
     
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ['name']
+        unique_together = ['name', 'user']  # Уникальное имя категории для каждого пользователя
     
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.user.username})"
 
 class ToDoItem(models.Model):
     """Модель задачи"""
@@ -35,6 +38,7 @@ class ToDoItem(models.Model):
     
     title = models.CharField(max_length=200, verbose_name='Название')
     done = models.BooleanField(default=False, verbose_name='Выполнено')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
     category = models.ForeignKey(
         Category, 
         on_delete=models.SET_NULL, 
@@ -57,7 +61,7 @@ class ToDoItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
     
     def __str__(self):
-        return self.title
+        return f"{self.title} ({self.user.username})"
     
     @property
     def is_overdue(self):

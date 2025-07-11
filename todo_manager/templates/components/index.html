@@ -1,55 +1,172 @@
 {% extends 'components/base.html' %}
+{% load todo_extras %}
 
 {% block title %}Главная - TODO Manager{% endblock %}
 
 {% block content %}
 <div class="p-4">
-    <!-- Заголовок -->
-    <div class="text-center mb-4">
-        <h1 class="display-4 fw-bold text-primary">
-            <i class="bi bi-check2-square"></i> TODO Manager
-        </h1>
-        <p class="lead text-muted">Управляйте своими задачами эффективно</p>
-    </div>
-    
-    <!-- Кнопка перехода к задачам -->
-    <div class="text-center">
-        <a href="{% url 'todo_list:index' %}" class="btn btn-primary btn-lg px-5">
-            <i class="bi bi-list-check"></i> Перейти к задачам
-        </a>
-    </div>
-    
-    <!-- Информационные карточки -->
-    <div class="row mt-5">
-        <div class="col-md-4 mb-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-plus-circle-fill text-primary" style="font-size: 3rem;"></i>
-                    <h5 class="card-title mt-3">Добавляйте задачи</h5>
-                    <p class="card-text text-muted">Быстро создавайте новые задачи одним кликом</p>
+    {% if user.is_authenticated %}
+        <!-- Добро пожаловать для аутентифицированных пользователей -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 fw-bold text-primary">
+                <i class="bi bi-check2-square"></i> Добро пожаловать, {{ user.username }}!
+            </h1>
+            <p class="lead text-muted">Ваша продуктивность под контролем</p>
+        </div>
+        
+        <!-- Статистика пользователя -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-list-check text-primary" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 mb-1">{{ total_todos|default:0 }}</h3>
+                        <p class="text-muted mb-0">Всего задач</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-check-circle text-success" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 mb-1">{{ completed_todos|default:0 }}</h3>
+                        <p class="text-muted mb-0">Выполнено</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-clock text-warning" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 mb-1">{{ pending_todos|default:0 }}</h3>
+                        <p class="text-muted mb-0">В ожидании</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 mb-1">{{ overdue_todos|default:0 }}</h3>
+                        <p class="text-muted mb-0">Просрочено</p>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-4 mb-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
-                    <h5 class="card-title mt-3">Отмечайте выполненные</h5>
-                    <p class="card-text text-muted">Следите за прогрессом выполнения</p>
+        <!-- Кнопки действий -->
+        <div class="text-center mb-4">
+            <a href="{% url 'todo_list:index' %}" class="btn btn-primary btn-lg px-4 me-3">
+                <i class="bi bi-list-check"></i> Перейти к задачам
+            </a>
+            <a href="{% url 'todo_list:categories' %}" class="btn btn-outline-primary btn-lg px-4 me-3">
+                <i class="bi bi-tags"></i> Управление категориями
+            </a>
+            <a href="{% url 'todo_list:logout' %}" class="btn btn-outline-danger btn-lg px-4">
+                <i class="bi bi-box-arrow-right"></i> Выйти из аккаунта
+            </a>
+        </div>
+        
+        <!-- Прогресс-бар -->
+        {% if total_todos > 0 %}
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title">Прогресс выполнения</h6>
+                        <div class="progress mb-2" style="height: 10px;">
+                            <div class="progress-bar 
+                                {% if progress_percent >= 80 %}bg-success{% elif progress_percent >= 60 %}bg-info{% elif progress_percent >= 40 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ progress_percent }}%"
+                                 aria-valuenow="{{ progress_percent }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100"></div>
+                        </div>
+                        <small class="text-muted">{{ progress_percent }}% выполнено</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+    {% else %}
+        <!-- Страница для неаутентифицированных пользователей -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 fw-bold text-primary">
+                <i class="bi bi-check2-square"></i> TODO Manager
+            </h1>
+            <p class="lead text-muted">Управляйте своими задачами эффективно</p>
+        </div>
+        
+        <!-- Кнопки входа/регистрации -->
+        <div class="text-center mb-5">
+            <a href="{% url 'todo_list:login' %}" class="btn btn-primary btn-lg px-5 me-3">
+                <i class="bi bi-box-arrow-in-right"></i> Войти
+            </a>
+            <a href="{% url 'todo_list:register' %}" class="btn btn-outline-primary btn-lg px-5">
+                <i class="bi bi-person-plus"></i> Регистрация
+            </a>
+        </div>
+        
+        <!-- Информационные карточки -->
+        <div class="row mt-5">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-plus-circle-fill text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Добавляйте задачи</h5>
+                        <p class="card-text text-muted">Быстро создавайте новые задачи одним кликом</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Отмечайте выполненные</h5>
+                        <p class="card-text text-muted">Следите за прогрессом выполнения</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-graph-up text-info" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Анализируйте</h5>
+                        <p class="card-text text-muted">Получайте статистику продуктивности</p>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-4 mb-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-graph-up text-info" style="font-size: 3rem;"></i>
-                    <h5 class="card-title mt-3">Анализируйте</h5>
-                    <p class="card-text text-muted">Получайте статистику продуктивности</p>
+        <!-- Дополнительные возможности -->
+        <div class="row mt-4">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-tags-fill text-warning" style="font-size: 2.5rem;"></i>
+                        <h6 class="card-title mt-3">Категории и приоритеты</h6>
+                        <p class="card-text text-muted small">Организуйте задачи по категориям и устанавливайте приоритеты</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-moon-fill text-dark" style="font-size: 2.5rem;"></i>
+                        <h6 class="card-title mt-3">Темная тема</h6>
+                        <p class="card-text text-muted small">Комфортная работа в любое время суток</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    {% endif %}
 </div>
 {% endblock %}

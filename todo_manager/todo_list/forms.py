@@ -1,8 +1,52 @@
 from django import forms
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.models import User
 from .models import ToDoItem, Category
+
+class CustomUserCreationForm(UserCreationForm):
+    """Кастомная форма регистрации"""
+    email = forms.EmailField(required=True)
+    first_name = forms.CharField(max_length=30, required=False)
+    last_name = forms.CharField(max_length=30, required=False)
+    
+    class Meta:
+        model = User
+        fields = ("username", "email", "first_name", "last_name", "password1", "password2")
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control'})
+        
+        self.fields['username'].widget.attrs.update({'placeholder': 'Имя пользователя'})
+        self.fields['email'].widget.attrs.update({'placeholder': 'Email'})
+        self.fields['first_name'].widget.attrs.update({'placeholder': 'Имя (необязательно)'})
+        self.fields['last_name'].widget.attrs.update({'placeholder': 'Фамилия (необязательно)'})
+        self.fields['password1'].widget.attrs.update({'placeholder': 'Пароль'})
+        self.fields['password2'].widget.attrs.update({'placeholder': 'Подтвердите пароль'})
+
+class CustomAuthenticationForm(AuthenticationForm):
+    """Кастомная форма входа"""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Имя пользователя'
+        })
+        self.fields['password'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Пароль'
+        })
 
 class TodoForm(forms.ModelForm):
     """Форма для создания новых задач"""
+    
+    def __init__(self, user=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user:
+            # Фильтруем категории только для текущего пользователя
+            self.fields['category'].queryset = Category.objects.filter(user=user)
     
     class Meta:
         model = ToDoItem
@@ -40,6 +84,12 @@ class TodoForm(forms.ModelForm):
 
 class TodoFormEdit(forms.ModelForm):
     """Форма для редактирования задач"""
+    
+    def __init__(self, user=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user:
+            # Фильтруем категории только для текущего пользователя
+            self.fields['category'].queryset = Category.objects.filter(user=user)
     
     class Meta:
         model = ToDoItem
