@@ -1,6 +1,19 @@
 # 🚀 Деплой Django TODO Manager на Render
 
-## 📋 Предварительные требования
+## 📋 Предва```
+DEBUG=0
+SECRET_KEY=your-super-secret-key-here-make-it-long-and-random
+DATABASE_URL=postgresql://todo_user:WONidQuWC3YGSTwfC7aFi2TrGeJNYRvs@dpg-d1odl4vfte5s73b6ngp0-a.oregon-postgres.render.com/todo_manager_db_zgdn
+ALLOWED_HOSTS=your-app-name.onrender.com
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_EMAIL=admin@example.com
+DJANGO_SUPERUSER_PASSWORD=your-admin-password
+```
+
+**Важно**: 
+- `DATABASE_URL` - уже указан URL вашей реальной БД
+- `SECRET_KEY` - сгенерируйте новый длинный ключ (можно использовать: https://djecrety.ir/)
+- `ALLOWED_HOSTS` - замените на ваше имя приложенияования
 
 1. **GitHub аккаунт** с репозиторием проекта
 2. **Render аккаунт** (бесплатный на render.com)
@@ -58,7 +71,7 @@ git push origin main
 ```
 DEBUG=0
 SECRET_KEY=your-super-secret-key-here-make-it-long-and-random
-DATABASE_URL=postgresql://user:password@host:port/database
+DATABASE_URL=postgresql://todo_user:WONidQuWC3YGSTwfC7aFi2TrGeJNYRvs@dpg-d1odl4vfte5s73b6ngp0-a.oregon-postgres.render.com/todo_manager_db_zgdn
 ALLOWED_HOSTS=your-app-name.onrender.com
 DJANGO_SUPERUSER_USERNAME=admin
 DJANGO_SUPERUSER_EMAIL=admin@example.com

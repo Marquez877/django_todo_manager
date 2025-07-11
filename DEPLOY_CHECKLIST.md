@@ -26,7 +26,8 @@
 - [ ] Ветка main актуальная
 
 ### 🌐 Render настройка
-- [ ] PostgreSQL база данных создана
+- [x] **PostgreSQL база данных создана и готова**
+- [x] **DATABASE_URL:** `postgresql://todo_user:WONidQuWC3YGSTwfC7aFi2TrGeJNYRvs@dpg-d1odl4vfte5s73b6ngp0-a.oregon-postgres.render.com/todo_manager_db_zgdn`
 - [ ] Environment Variables настроены:
   - [ ] `DEBUG=0`
   - [ ] `SECRET_KEY=...`
