@@ -1,20 +1,55 @@
-{% extends "components/base.html" %}
+{% extends 'components/base.html' %}
 
-{% block title %}Home - Django TODO Manager{% endblock title %}
-
-{% block header %}
-<p>Manage your tasks efficiently</p>
-{% endblock header %}
+{% block title %}Главная - TODO Manager{% endblock %}
 
 {% block content %}
-<div style="text-align: center;">
-    <h2>Welcome to the Todo Manager!</h2>
-    <p>This is your personal task management system.</p>
-    <p>Current time: {% now "Y-m-d H:i:s" %}</p>
+<div class="p-4">
+    <!-- Заголовок -->
+    <div class="text-center mb-4">
+        <h1 class="display-4 fw-bold text-primary">
+            <i class="bi bi-check2-square"></i> TODO Manager
+        </h1>
+        <p class="lead text-muted">Управляйте своими задачами эффективно</p>
+    </div>
     
-    <div style="margin-top: 30px;">
-        <a href="/admin/" style="display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin: 5px;">Admin Panel</a>
-        <a href="/todo/" style="display: inline-block; background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin: 5px;">Todo List</a>
+    <!-- Кнопка перехода к задачам -->
+    <div class="text-center">
+        <a href="{% url 'todo_list:index' %}" class="btn btn-primary btn-lg px-5">
+            <i class="bi bi-list-check"></i> Перейти к задачам
+        </a>
+    </div>
+    
+    <!-- Информационные карточки -->
+    <div class="row mt-5">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-plus-circle-fill text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Добавляйте задачи</h5>
+                    <p class="card-text text-muted">Быстро создавайте новые задачи одним кликом</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Отмечайте выполненные</h5>
+                    <p class="card-text text-muted">Следите за прогрессом выполнения</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up text-info" style="font-size: 3rem;"></i>
+                    <h5 class="card-title mt-3">Анализируйте</h5>
+                    <p class="card-text text-muted">Получайте статистику продуктивности</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-{% endblock content %}
+{% endblock %}

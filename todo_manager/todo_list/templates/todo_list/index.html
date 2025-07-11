@@ -1,57 +1,253 @@
 {% extends 'todo_list/base.html' %}
 
-{% block title %}
-Todo List - Manage Your Tasks
-{% endblock title %}
-
-{% block header %}
-<p>Create, update, and manage your todo items</p>
-{% endblock header %}
+{% block title %}Мои задачи - TODO Manager{% endblock %}
 
 {% block content %}
-<div>
-    <h2>Your Todo List</h2>
-    
-    <!-- Todo form -->
-    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
-        <h3>Add New Todo</h3>
-        <form method="post" style="display: flex; gap: 10px; align-items: center;">
-            {% csrf_token %}
-            <input type="text" name="title" placeholder="Enter todo item..." required 
-                   style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-            <button type="submit" style="background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
-                Add Todo
-            </button>
-        </form>
-    </div>
-    
-    <!-- Todo list -->
-    <div>
-        <h3>Current Todos</h3>
-        {% if todos %}
-            <ul style="list-style: none; padding: 0;">
-                {% for todo in todos %}
-                <li style="background-color: #fff; border: 1px solid #ddd; margin-bottom: 10px; padding: 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
-                    <span>{{ todo.title }}</span>
-                    <div>
-                        <small style="color: #666;">{{ todo.created_at|date:"M d, Y H:i" }}</small>
-                        <button style="background-color: #dc3545; color: white; padding: 4px 8px; border: none; border-radius: 4px; margin-left: 10px; cursor: pointer;">
-                            Delete
-                        </button>
+<div class="p-4">
+    <!-- Заголовок и статистика -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2 fw-bold">
+                <i class="bi bi-list-check"></i> Мои задачи
+            </h1>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card p-3 text-center">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="fw-bold">{{ total_todos }}</div>
+                        <small>Всего</small>
                     </div>
-                </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p style="text-align: center; color: #666; font-style: italic;">No todos yet. Add one above!</p>
-        {% endif %}
+                    <div class="col-4">
+                        <div class="fw-bold">{{ pending_todos }}</div>
+                        <small>Активных</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold">{{ completed_todos }}</div>
+                        <small>Готово</small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
-    <div style="margin-top: 30px; text-align: center;">
-        <a href="/" style="display: inline-block; background-color: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
-            Back to Home
-        </a>
+    <!-- Сообщения -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <!-- Форма добавления задачи -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="bi bi-plus-circle"></i> Добавить новую задачу
+            </h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                        {{ form.category }}
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="{{ form.priority.id_for_label }}" class="form-label">{{ form.priority.label }}</label>
+                        {{ form.priority }}
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="{{ form.due_date.id_for_label }}" class="form-label">{{ form.due_date.label }}</label>
+                        {{ form.due_date }}
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'todo_list:categories' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-tags"></i> Управление категориями
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus"></i> Добавить задачу
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+    
+    <!-- Фильтры -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body">
+            <h6 class="card-title">
+                <i class="bi bi-funnel"></i> Фильтры и поиск
+            </h6>
+            <form method="get" class="row g-2">
+                <div class="col-md-3">
+                    <input type="text" name="search" class="form-control" placeholder="Поиск задач..." 
+                           value="{{ current_filters.search|default:'' }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="category" class="form-select">
+                        <option value="">Все категории</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if current_filters.category == category.id|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="priority" class="form-select">
+                        <option value="">Все приоритеты</option>
+                        <option value="urgent" {% if current_filters.priority == 'urgent' %}selected{% endif %}>Срочный</option>
+                        <option value="high" {% if current_filters.priority == 'high' %}selected{% endif %}>Высокий</option>
+                        <option value="medium" {% if current_filters.priority == 'medium' %}selected{% endif %}>Средний</option>
+                        <option value="low" {% if current_filters.priority == 'low' %}selected{% endif %}>Низкий</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select">
+                        <option value="">Все статусы</option>
+                        <option value="pending" {% if current_filters.status == 'pending' %}selected{% endif %}>Активные</option>
+                        <option value="completed" {% if current_filters.status == 'completed' %}selected{% endif %}>Выполненные</option>
+                        <option value="overdue" {% if current_filters.status == 'overdue' %}selected{% endif %}>Просроченные</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="sort" class="form-select">
+                        <option value="-created_at" {% if current_filters.sort == '-created_at' %}selected{% endif %}>Новые сначала</option>
+                        <option value="created_at" {% if current_filters.sort == 'created_at' %}selected{% endif %}>Старые сначала</option>
+                        <option value="priority" {% if current_filters.sort == 'priority' %}selected{% endif %}>По приоритету</option>
+                        <option value="due_date" {% if current_filters.sort == 'due_date' %}selected{% endif %}>По сроку</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Список задач -->
+    {% if todos %}
+        <div class="row">
+            {% for todo in todos %}
+                <div class="col-12 mb-3">
+                    <div class="card todo-item border-0 shadow-sm {% if todo.done %}completed{% endif %}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <!-- Чекбокс и название -->
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center">
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   {% if todo.done %}checked{% endif %}
+                                                   onchange="toggleTodo({{ todo.id }})">
+                                        </div>
+                                        <div>
+                                            <h6 class="todo-title mb-1 {% if todo.done %}text-muted{% endif %}">
+                                                {{ todo.title }}
+                                                {% if todo.is_overdue and not todo.done %}
+                                                    <span class="badge bg-danger ms-2">
+                                                        <i class="bi bi-exclamation-triangle"></i> Просрочено
+                                                    </span>
+                                                {% endif %}
+                                            </h6>
+                                            <div class="d-flex gap-2 align-items-center mb-1">
+                                                <!-- Категория -->
+                                                {% if todo.category %}
+                                                    <span class="badge" style="background-color: {{ todo.category.color }};">
+                                                        <i class="bi bi-tag"></i> {{ todo.category.name }}
+                                                    </span>
+                                                {% endif %}
+                                                
+                                                <!-- Приоритет -->
+                                                <span class="badge {{ todo.priority_badge_class }}">
+                                                    {% if todo.priority == 'urgent' %}
+                                                        <i class="bi bi-exclamation-circle"></i> Срочный
+                                                    {% elif todo.priority == 'high' %}
+                                                        <i class="bi bi-arrow-up"></i> Высокий
+                                                    {% elif todo.priority == 'medium' %}
+                                                        <i class="bi bi-dash"></i> Средний
+                                                    {% else %}
+                                                        <i class="bi bi-arrow-down"></i> Низкий
+                                                    {% endif %}
+                                                </span>
+                                                
+                                                <!-- Срок выполнения -->
+                                                {% if todo.due_date %}
+                                                    <span class="badge bg-info">
+                                                        <i class="bi bi-calendar-event"></i> {{ todo.due_date|date:"d.m.Y H:i" }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar"></i> 
+                                                {{ todo.created_at|date:"d.m.Y H:i" }}
+                                                {% if todo.updated_at != todo.created_at %}
+                                                    <span class="ms-2">
+                                                        <i class="bi bi-pencil"></i>
+                                                        Изменено: {{ todo.updated_at|date:"d.m.Y H:i" }}
+                                                    </span>
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Действия -->
+                                <div class="col-md-4">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <!-- Статус -->
+                                        {% if todo.done %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Выполнено
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-clock"></i> В работе
+                                            </span>
+                                        {% endif %}
+                                        
+                                        <!-- Кнопки действий -->
+                                        <a href="{% url 'todo_list:edit_todo' todo.id %}" 
+                                           class="btn btn-sm btn-outline-primary btn-action"
+                                           title="Редактировать">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        
+                                        <a href="{% url 'todo_list:delete_todo' todo.id %}" 
+                                           class="btn btn-sm btn-outline-danger btn-action"
+                                           title="Удалить"
+                                           onclick="return confirm('Вы уверены, что хотите удалить эту задачу?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Пустое состояние -->
+        <div class="text-center py-5">
+            <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">Задач пока нет</h4>
+            <p class="text-muted">Добавьте свою первую задачу, чтобы начать работу</p>
+        </div>
+    {% endif %}
 </div>
-{% endblock content %}
 
+{% csrf_token %}
+{% endblock %}
