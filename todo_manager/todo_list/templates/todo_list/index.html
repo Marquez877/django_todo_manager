@@ -1,0 +1,57 @@
+{% extends 'todo_list/base.html' %}
+
+{% block title %}
+Todo List - Manage Your Tasks
+{% endblock title %}
+
+{% block header %}
+<p>Create, update, and manage your todo items</p>
+{% endblock header %}
+
+{% block content %}
+<div>
+    <h2>Your Todo List</h2>
+    
+    <!-- Todo form -->
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+        <h3>Add New Todo</h3>
+        <form method="post" style="display: flex; gap: 10px; align-items: center;">
+            {% csrf_token %}
+            <input type="text" name="title" placeholder="Enter todo item..." required 
+                   style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <button type="submit" style="background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+                Add Todo
+            </button>
+        </form>
+    </div>
+    
+    <!-- Todo list -->
+    <div>
+        <h3>Current Todos</h3>
+        {% if todos %}
+            <ul style="list-style: none; padding: 0;">
+                {% for todo in todos %}
+                <li style="background-color: #fff; border: 1px solid #ddd; margin-bottom: 10px; padding: 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>{{ todo.title }}</span>
+                    <div>
+                        <small style="color: #666;">{{ todo.created_at|date:"M d, Y H:i" }}</small>
+                        <button style="background-color: #dc3545; color: white; padding: 4px 8px; border: none; border-radius: 4px; margin-left: 10px; cursor: pointer;">
+                            Delete
+                        </button>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="text-align: center; color: #666; font-style: italic;">No todos yet. Add one above!</p>
+        {% endif %}
+    </div>
+    
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="/" style="display: inline-block; background-color: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
+            Back to Home
+        </a>
+    </div>
+</div>
+{% endblock content %}
+

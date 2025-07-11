@@ -1,0 +1,20 @@
+{% extends "components/base.html" %}
+
+{% block title %}Home - Django TODO Manager{% endblock title %}
+
+{% block header %}
+<p>Manage your tasks efficiently</p>
+{% endblock header %}
+
+{% block content %}
+<div style="text-align: center;">
+    <h2>Welcome to the Todo Manager!</h2>
+    <p>This is your personal task management system.</p>
+    <p>Current time: {% now "Y-m-d H:i:s" %}</p>
+    
+    <div style="margin-top: 30px;">
+        <a href="/admin/" style="display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin: 5px;">Admin Panel</a>
+        <a href="/todo/" style="display: inline-block; background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin: 5px;">Todo List</a>
+    </div>
+</div>
+{% endblock content %}
